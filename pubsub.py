@@ -1,14 +1,21 @@
 #!/usr/bin/env python
 
-class Publisher:
+class AbstractPublisher:
+    '''Abstract Publisher Class
+    '''
+    def __init__(self, name='Publisher'):
+        pass
+
+class Publisher(AbstractPublisher):
     '''Publisher Class
     '''
     def __init__(self, topic, name='Publisher'):
+        AbstractPublisher.__init__(self, name)
         self.topic = topic
         self.name = name
 
     def publish(self, message):
-        self.topic.publish(message) 
+        self.topic.write(message) 
     
     def get_name(self):
         return self.name

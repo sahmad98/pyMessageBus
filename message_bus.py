@@ -13,5 +13,9 @@ class MessageBus:
         return self.message_queue[topic_name]
 
     def get_topic(self, topic_name):
-        self.message_queue[topic_name]
+        return self.message_queue[topic_name]
+
+    def bind(self, topic_name, pubsub):
+        topic = self.get_topic(topic_name)
+        pubsub.bind_topic(topic)
 

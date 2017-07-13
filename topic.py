@@ -12,16 +12,14 @@ class BroadcastThread(Thread):
     def run(self):
         self.topic.incr_counter()
         while self.topic.has_message():
+            self.subs_lock.acquire()
             subscribers = self.topic.get_subscribers()
-            if len(subscribers) > 0:
-                message = self.topic.get_message()
-                self.subs_lock.acquire()
-                for subs_name in subscribers:
-                    subs = subscribers[subs_name]
-                    subs.read_handler(message)
-                    time.sleep(0.1)
-                self.subs_lock.release()
-
+            message = self.topic.read()
+            for subs_name in subscribers:
+                subs = subscribers[subs_name]
+                subs.read_handler(message)
+            self.subs_lock.release()
+            time.sleep(0.1)
 
 class Topic:
     '''Topic class
@@ -41,7 +39,7 @@ class Topic:
         self.queue.append(message)
         self.broadcast()
 
-    def get_message(self):
+    def read(self):
         return self.queue.pop(0)
 
     def broadcast(self):
@@ -55,6 +53,10 @@ class Topic:
         self.subs_lock.acquire()
         self.subscribers[subscriber.get_name()] = subscriber
         self.subs_lock.release()
+
+    def unsubscribe(self, subscriber):
+        # TODO: Implement unsubscribe
+        pass
 
     def get_subscribers(self):
         return self.subscribers

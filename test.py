@@ -6,18 +6,21 @@ from flask import Flask
 import time
 
 bus = MessageBus()
-topic = bus.add_topic('saleem')
+bus.add_topic('saleem')
 
-publisher = Publisher(topic, 'Pub1')
-sub1 = Subscriber(topic, 'Sub1')
-sub2 = Subscriber(topic, 'Sub2')
+publisher = Publisher('Pub1')
+bus.bind('saleem', publisher)
+
+sub1 = Subscriber('Sub1')
+sub2 = Subscriber('Sub2')
+bus.bind('saleem', sub1)
+bus.bind('saleem', sub2)
 
 publisher.publish('Hello Saleem')
-publisher2 = Publisher(topic, 'Pub2')
 
-for x in xrange(10):
-    publisher.publish('Pub1 : %s: Counter %s' % (x, topic.get_counter()))
-    publisher2.publish('Pub2')
+for x in xrange(20):
+    publisher.publish('Pub1 : %s: Counter ' % (x))
 
 time.sleep(1)
-sub3 = Subscriber(topic, 'Sub3')
+sub3 = Subscriber('Sub3')
+bus.bind('saleem', sub3)

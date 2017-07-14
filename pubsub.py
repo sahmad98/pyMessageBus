@@ -15,7 +15,7 @@ class Publisher(AbstractPublisher):
 
     def publish(self, message):
         if self.topic != None:
-            self.topic.publish(message) 
+            self.topic.write(message) 
     
     def get_name(self):
         return self.name

@@ -34,7 +34,7 @@ class BroadcastThread(Thread):
         if the previous thread is terminated.
         '''
         self.topic.incr_counter()
-        while self.topic.has_message():
+        while self.topic.has_message() and len(self.topic.subscribers) > 0:
             self.subs_lock.acquire()
             subscribers = self.topic.get_subscribers()
             message = self.topic.read()
@@ -66,8 +66,7 @@ class Topic:
         # Lock for queue and subscribers map sync
         self.queue_lock = Lock()
         self.subs_lock = Lock()
-        self.broadcast_thread = BroadcastThread('broadcast-thread', self, self.subs_lock)
-        self.broadcast_thread.start()   
+        self.broadcast_thread = None
 
     def write(self, message):
         '''@Arguments
@@ -77,6 +76,7 @@ class Topic:
         '''
         self.queue.append(message)
         self.broadcast()
+        return True
 
     def read(self):
         '''@Returns - message from message queue
@@ -84,7 +84,10 @@ class Topic:
         if available. Queue might be empty so always use 
         has_message() before calling read.
         '''
-        return self.queue.pop(0)
+        if len(self.queue) > 0:
+            return self.queue.pop(0)
+        else:
+            return None
 
     def broadcast(self):
         '''broadcast method starts new thread broadcaster to
@@ -92,7 +95,7 @@ class Topic:
         active broadcast thread available then it uses that
         other wise creats a new broadcast thread.
         '''
-        if self.broadcast_thread.isAlive():
+        if self.broadcast_thread != None and self.broadcast_thread.isAlive():
             return
         else:
             self.broadcast_thread = BroadcastThread('broadcast-thread', self, self.subs_lock)
@@ -108,6 +111,7 @@ class Topic:
         self.subs_lock.acquire()
         self.subscribers[subscriber.get_name()] = subscriber
         self.subs_lock.release()
+        self.broadcast()
 
     def unsubscribe(self, subscriber):
         # TODO: Implement unsubscribe
@@ -135,6 +139,5 @@ class Topic:
 
     def incr_counter(self):
         self.counter += 1
-
 
 
